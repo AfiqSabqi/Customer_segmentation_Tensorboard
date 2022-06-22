@@ -33,6 +33,9 @@ from tensorflow.keras.callbacks import EarlyStopping,TensorBoard
 from sklearn.metrics import confusion_matrix,classification_report
 from tensorflow.keras.layers import Dropout,Dense,Input,BatchNormalization
 
+from modules_for_customer_segmentation import EDA
+from modules_for_customer_segmentation import ModelCreation
+
 #%%                               STATIC
 
 DATA_PATH=os.path.join(os.getcwd(),'dataset','train.csv')
@@ -42,18 +45,6 @@ OHE_PICKLE_PATH=os.path.join(os.getcwd(),'model','ohe.pkl')
 
 log_dir=datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 LOG_PATH=os.path.join(os.getcwd(),'logs',log_dir)
-
-def plot_con(df,continuous_data):
-    for con in continuous_data:
-        plt.figure()
-        sns.distplot(df[con])
-        plt.show()
-
-def plot_cat(df,categorical_data):
-    for cat in categorical_data:
-        plt.figure()
-        sns.countplot(df[cat])
-        plt.show()
 
 
 def cramers_corrected_stat(confusion_matrix):
@@ -122,13 +113,17 @@ with open(LE_FILE_PATH,'wb') as file:
 
 ##         general view of correlation from graph
 
-# from def plot_con (static section)
-plot_con(df,continuous_data)  
-plot_cat(df,categorical_data) 
+# from def plot_con and plot_cat (modules)
+
+eda=EDA()
+
+eda.plot_con(df,continuous_data)  
+eda.plot_cat(df,categorical_data) 
 
 
 ##          correlation analysis
 
+# continuous vs categorical using logistic regression
 for con in continuous_data:
     print(con)
     lr = LogisticRegression()
@@ -148,8 +143,9 @@ X=df.loc[:,['customer_age','balance','day_of_month','last_contact_duration',
               'num_contacts_in_campaign','num_contacts_prev_campaign',
               'job_type','housing_loan','communication_type','month',
               'prev_campaign_outcome']]
+
 y=df['term_deposit_subscribed']
-# X=df.drop(labels=['term_deposit_subscribed'],axis=1)
+
 
 
 #%%                                PREPROCESSING
@@ -165,19 +161,10 @@ X_train,X_test,y_train,y_test = train_test_split(X,y,
                                                   test_size=0.3,
                                                   random_state=123)
 
-nb_features=np.shape(X)[1:]
-nb_classes=len(np.unique(y_train,axis=0))
+# import ModelCreation from modulesfor model sequential
 
-
-model=Sequential()                # to create container
-model.add(Input(shape=(nb_features)))
-model.add(Dense(128,activation='linear',name='Hidden_Layer1'))
-model.add(BatchNormalization())
-model.add(Dropout(0.3))
-model.add(Dense(128,activation='linear',name='Hidden_Layer2'))
-model.add(BatchNormalization())
-model.add(Dropout(0.3))
-model.add(Dense(nb_classes,activation='softmax',name='Output_layer'))
+mc=ModelCreation()
+model=mc.simple_tens_layer(X,y_train)
 
 model.summary()
 
@@ -252,6 +239,10 @@ print(confusion_matrix(y_true, y_pred))
     *selection of features gives a difference about 1% accuracy
     
     *the graph also shows in tensorboard as shown in tensorboard.png
+    
+    *Epochs is stay at 100 because more epoch not giving any benefit
+    
+    *model already stop learning after 50++ epoch
     
 
 '''
