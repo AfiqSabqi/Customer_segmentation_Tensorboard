@@ -16,22 +16,18 @@ import pickle
 import datetime
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import tensorflow as tf
 import scipy.stats as ss
 import missingno as msno
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing
-from tensorflow.keras import Sequential
 from sklearn.metrics import accuracy_score
 from tensorflow.keras.utils import plot_model
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.callbacks import EarlyStopping,TensorBoard
+from tensorflow.keras.callbacks import TensorBoard
 from sklearn.metrics import confusion_matrix,classification_report
-from tensorflow.keras.layers import Dropout,Dense,Input,BatchNormalization
 
 from modules_for_customer_segmentation import EDA
 from modules_for_customer_segmentation import ModelCreation
@@ -183,7 +179,10 @@ hist=model.fit(X_train,y_train,
               validation_data=(X_test,y_test),
               batch_size=123,epochs=100,
               callbacks=[tensorboard_callback])
-              
+
+#Earlystopping is not use. the reason is discuss below in discussion section
+
+
               
 hist.history.keys()
 training_loss=hist.history['loss']
@@ -243,6 +242,9 @@ print(confusion_matrix(y_true, y_pred))
     *Epochs is stay at 100 because more epoch not giving any benefit
     
     *model already stop learning after 50++ epoch
+    
+    *Earlystopping is not used as the model gives a good result. and even
+    use the EarlyStopping, the graph and accuracy did not give and effect
     
 
 '''
